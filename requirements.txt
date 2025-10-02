@@ -1,4 +1,4 @@
-diffusers==0.15.0
+diffusers
 transformers
 opencv-python
 einops
