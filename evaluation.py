@@ -91,7 +91,7 @@ def main(args):
         target_prompt=f"{object} {prompt}"
         prompts = [source_prompt, target_prompt]
 
-        preprocessed_image=model.image_processor.preprocess(image)
+        preprocessed_image=model.image_processor.preprocess(image).to(device)
 
         start_code, latents_list = model.invert(preprocessed_image,
                                         "",
