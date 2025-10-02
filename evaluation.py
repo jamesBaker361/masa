@@ -92,7 +92,9 @@ def main(args):
         target_prompt=f"{object} {prompt}"
         prompts = [source_prompt, target_prompt]
 
-        start_code, latents_list = model.invert(image,
+        preprocessed_image=model.image_processor.preprocess(image)
+
+        start_code, latents_list = model.invert(preprocessed_image,
                                         "",
                                         guidance_scale=7.5,
                                         num_inference_steps=50,
