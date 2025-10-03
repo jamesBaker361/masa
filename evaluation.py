@@ -29,6 +29,7 @@ parser.add_argument("--limit",type=int,default=-1)
 parser.add_argument("--size",type=int,default=512)
 parser.add_argument("--object",type=str, default="person")
 parser.add_argument("--dest_dataset",type=str,default="jlbaker361/masa")
+parser.add_argument("--dim",type=int,default=256)
 
 
 
@@ -93,6 +94,8 @@ def main(args):
 
         preprocessed_image=model.image_processor.preprocess(image).to(device)
 
+        [height,width]=preprocessed_image.size()[-2:]
+
         start_code, latents_list = model.invert(preprocessed_image,
                                         "",
                                         guidance_scale=7.5,
@@ -110,7 +113,7 @@ def main(args):
         # inference the synthesized image
         augmented_image= model(prompts,
                             latents=start_code,
-                            guidance_scale=7.5)
+                            guidance_scale=7.5,height=height,width=width)
         
         concat=concat_images_horizontally([row["image"],augmented_image])
 
