@@ -111,9 +111,11 @@ def main(args):
         regiter_attention_editor_diffusers(model, editor)
 
         # inference the synthesized image
-        augmented_image= model(prompts,
+        _,augmented_image= model(prompts,
                             latents=start_code,
                             guidance_scale=7.5,height=height,width=width)
+        
+        
         
         concat=concat_images_horizontally([row["image"],augmented_image])
 

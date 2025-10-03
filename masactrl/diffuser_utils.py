@@ -191,11 +191,12 @@ class MasaCtrlPipeline(StableDiffusionPipeline):
             pred_x0_list.append(pred_x0)
 
         image = self.latent2image(latents, return_type="pt")
+        pil_image=self.image_processor.numpy_to_pil(self.latent2image(latents, return_type="np"))
         if return_intermediates:
             pred_x0_list = [self.latent2image(img, return_type="pt") for img in pred_x0_list]
             latents_list = [self.latent2image(img, return_type="pt") for img in latents_list]
             return image, pred_x0_list, latents_list
-        return image
+        return image,pil_image
 
     @torch.no_grad()
     def invert(
