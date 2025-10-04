@@ -115,9 +115,11 @@ def main(args):
                             latents=start_code,
                             guidance_scale=7.5,height=height,width=width)
         
+        augmented_image=augmented_image[0]
         
         
-        concat=concat_images_horizontally([row["image"],augmented_image[0]])
+        
+        concat=concat_images_horizontally([row["image"],augmented_image])
 
         accelerator.log({
             f"image_{k}":wandb.Image(concat)
