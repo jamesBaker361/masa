@@ -127,11 +127,18 @@ def main(args):
                             guidance_scale=7.5,height=height,width=width)
         
         augmented_image=augmented_image[0]
+
+        # Note: querying the inversion intermediate features latents_list
+        # may obtain better reconstruction and editing results
+        image_latents = model(prompts,
+                               latents=start_code,
+                                guidance_scale=7.5,
+                                ref_intermediate_latents=latents_list)
         raw_image=postprocess_image(raw_image)[0]
         
         
         
-        concat=concat_images_horizontally([row["image"],augmented_image,raw_image])
+        concat=concat_images_horizontally([row["image"],raw_image,postprocess_image(image_latents)[0]])
 
         accelerator.log({
             f"image_{k}":wandb.Image(concat)
