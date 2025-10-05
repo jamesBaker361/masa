@@ -21,7 +21,7 @@ from diffusers import DDIMScheduler
 
 parser=argparse.ArgumentParser()
 
-parser.add_argument("--mixed_precision",type=str,default="no")
+parser.add_argument("--mixed_precision",type=str,default="fp16")
 parser.add_argument("--project_name",type=str,default="masa")
 parser.add_argument("--src_dataset",type=str, default="jlbaker361/mtg")
 parser.add_argument("--num_inference_steps",type=int,default=20)
@@ -49,14 +49,19 @@ def main(args):
     }[args.mixed_precision]
     device=accelerator.device
 
-    output_dict={
-        "image":[],
-        "augmented_image":[],
-        "text_score":[],
-        "image_score":[],
-        "dino_score":[],
-        "prompt":[]
-    }
+    try:
+        output_dict=load_dataset(args.dest_dataset,split="train").to_dict()
+        skip=len(output_dict["image"])
+    except:
+        output_dict={
+            "image":[],
+            "augmented_image":[],
+            "text_score":[],
+            "image_score":[],
+            "dino_score":[],
+            "prompt":[]
+        }
+        skip=0
 
     model_path = "CompVis/stable-diffusion-v1-4"
     # model_path = "runwayml/stable-diffusion-v1-5"
@@ -79,6 +84,8 @@ def main(args):
     for k,row in enumerate(data):
         if k==args.limit:
             break
+        if k<skip:
+            continue
         
         prompt=real_test_prompt_list[k%len(real_test_prompt_list)]
         background_image=background_dict[prompt]
@@ -155,6 +162,8 @@ def main(args):
         output_dict["text_score"].append(text_score)
         output_dict["prompt"].append(prompt)
 
+        Dataset.from_dict(output_dict).push_to_hub(args.dest_dataset)
+
        
     accelerator.log({
         "text_score_list":np.mean(text_score_list),
@@ -164,7 +173,7 @@ def main(args):
         "dino_score_list":np.mean(dino_score_list)
     })
 
-    Dataset.from_dict(output_dict).push_to_hub(args.dest_dataset)
+    
 
         
 
