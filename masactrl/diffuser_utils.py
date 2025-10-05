@@ -140,7 +140,7 @@ class MasaCtrlPipeline(StableDiffusionPipeline):
         if latents is None:
             latents = torch.randn(latents_shape, device=DEVICE)
         else:
-            assert latents.shape == latents_shape, f"The shape of input latent tensor {latents.shape} should equal to predefined one."
+            assert latents.shape == latents_shape, f"The shape of input latent tensor {latents.shape} should equal to predefined one {latents_shape}."
 
         # unconditional embedding for classifier free guidance
         if guidance_scale > 1.:
