@@ -92,6 +92,9 @@ def main(args):
         background_image=background_dict[prompt]
         image=row["image"]
 
+        if args.resize:
+            image=image.resize((args.dim,args.dim))
+
         object=args.object
         if "object" in row:
             object=row["object"]
