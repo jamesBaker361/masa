@@ -16,6 +16,7 @@ from masactrl.masactrl_utils import AttentionBase
 from masactrl.masactrl_utils import regiter_attention_editor_diffusers,postprocess_image
 from masactrl.masactrl import MutualSelfAttentionControl
 import wandb
+from transformers import BlipProcessor, BlipForConditionalGeneration
 
 from diffusers import DDIMScheduler
 
@@ -35,20 +36,25 @@ parser.add_argument("--resize",action="store_true")
 
 
 def main(args):
-
-    clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-    processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
     accelerator=Accelerator(log_with="wandb",mixed_precision=args.mixed_precision)
     accelerator.init_trackers(project_name=args.project_name,config=vars(args))
-
-    dino_metric=DinoMetric(accelerator.device)
-
     torch_dtype={
         "no":torch.float32,
         "fp16":torch.float16,
         "bf16":torch.bfloat16
     }[args.mixed_precision]
     device=accelerator.device
+
+    clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+    processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    
+
+    blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base", torch_dtype=torch_dtype).to(device)
+
+    dino_metric=DinoMetric(accelerator.device)
+
+    
 
     try:
         output_dict=load_dataset(args.dest_dataset,split="train").to_dict()
@@ -94,12 +100,16 @@ def main(args):
 
         image=image.resize((args.dim,args.dim))
 
+        blip_inputs = blip_processor(image, return_tensors="pt").to(device, torch_dtype)
+        blip_out = blip_model.generate(**blip_inputs)
+        src_caption=blip_processor.decode(blip_out[0], skip_special_tokens=True)
+
         object=args.object
         if "object" in row:
             object=row["object"]
 
-        source_prompt=""
-        target_prompt=f"{object} {prompt}"
+        source_prompt=src_caption
+        target_prompt=f"{src_caption} {prompt}"
         prompts = [source_prompt, target_prompt]
 
         preprocessed_image=model.image_processor.preprocess(image).to(device)
