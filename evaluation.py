@@ -129,7 +129,7 @@ def main(args):
 
         # Note: querying the inversion intermediate features latents_list
         # may obtain better reconstruction and editing results
-        image_latents = model(prompts,
+        image_latents,_ = model(prompts,
                                latents=start_code,
                                 guidance_scale=7.5,
                                 ref_intermediate_latents=latents_list)
