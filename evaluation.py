@@ -137,7 +137,7 @@ def main(args):
         
         
         
-        concat=concat_images_horizontally([row["image"],raw_image,postprocess_image(image_latents)[0]])
+        concat=concat_images_horizontally([row["image"],raw_image,postprocess_image(image_latents.unsqueeze(0))[0]])
 
         accelerator.log({
             f"image_{k}":wandb.Image(concat)
