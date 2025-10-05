@@ -9,6 +9,16 @@ from typing import Optional, Union, Tuple, List, Callable, Dict
 
 from torchvision.utils import save_image
 from einops import rearrange, repeat
+from PIL import Image
+
+@torch.no_grad()
+def postprocess_image(tensor: Union[torch.Tensor, List[torch.Tensor]],)->List[Image.Image]:
+    output=[]
+    for t in tensor:
+        ndarr=t.mul(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to("cpu", torch.uint8).numpy()
+        output.append(Image.fromarray(ndarr))
+
+    return output
 
 
 class AttentionBase:

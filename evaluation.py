@@ -13,7 +13,7 @@ from style_rl.eval_helpers import DinoMetric
 from style_rl.prompt_list import real_test_prompt_list
 from masactrl.diffuser_utils import MasaCtrlPipeline
 from masactrl.masactrl_utils import AttentionBase
-from masactrl.masactrl_utils import regiter_attention_editor_diffusers
+from masactrl.masactrl_utils import regiter_attention_editor_diffusers,postprocess_image
 from masactrl.masactrl import MutualSelfAttentionControl
 import wandb
 
@@ -30,6 +30,7 @@ parser.add_argument("--size",type=int,default=512)
 parser.add_argument("--object",type=str, default="person")
 parser.add_argument("--dest_dataset",type=str,default="jlbaker361/masa")
 parser.add_argument("--dim",type=int,default=256)
+parser.add_argument("--resize",action="store_true")
 
 
 
@@ -118,15 +119,16 @@ def main(args):
         regiter_attention_editor_diffusers(model, editor)
 
         # inference the synthesized image
-        _,augmented_image= model(prompts,
+        raw_image,augmented_image= model(prompts,
                             latents=start_code,
                             guidance_scale=7.5,height=height,width=width)
         
         augmented_image=augmented_image[0]
+        raw_image=postprocess_image(raw_image)[0]
         
         
         
-        concat=concat_images_horizontally([row["image"],augmented_image])
+        concat=concat_images_horizontally([row["image"],augmented_image,raw_image])
 
         accelerator.log({
             f"image_{k}":wandb.Image(concat)
