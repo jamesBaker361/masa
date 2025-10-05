@@ -139,22 +139,22 @@ def main(args):
 
         # Note: querying the inversion intermediate features latents_list
         # may obtain better reconstruction and editing results
-        image_latents,_ = model(prompts,
+        '''image_latents,_ = model(prompts,
                                latents=start_code,
                                 guidance_scale=7.5,
-                                ref_intermediate_latents=latents_list)
+                                ref_intermediate_latents=latents_list)'''
         raw_image=postprocess_image(raw_image)[0]
         
         
         
-        concat=concat_images_horizontally([row["image"],raw_image,postprocess_image(image_latents)[0]])
+        concat=concat_images_horizontally([row["image"],raw_image])
 
         accelerator.log({
             f"image_{k}":wandb.Image(concat)
         })
         with torch.no_grad():
             inputs = processor(
-                    text=[prompt], images=[row["image"],augmented_image,background_image], return_tensors="pt", padding=True
+                    text=[prompt], images=[row["image"],raw_image,background_image], return_tensors="pt", padding=True
             )
 
             outputs = clip_model(**inputs)
@@ -168,7 +168,7 @@ def main(args):
         [_,text_score,__]=logits_per_text
         [_,image_score,image_score_background]=image_similarities
         #ir_score=ir_model.score(prompt,augmented_image)
-        dino_score=dino_metric.get_scores(image, [augmented_image])
+        dino_score=dino_metric.get_scores(image, [raw_image])
 
         text_score_list.append(text_score.detach().cpu().numpy())
         image_score_list.append(image_score)
@@ -176,7 +176,7 @@ def main(args):
        # ir_score_list.append(ir_score)
         dino_score_list.append(dino_score)
 
-        output_dict["augmented_image"].append(augmented_image)
+        output_dict["augmented_image"].append(raw_image)
         output_dict["image"].append(image)
         output_dict["dino_score"].append(dino_score)
         output_dict["image_score"].append(image_score)
