@@ -56,19 +56,19 @@ def main(args):
 
     
 
-    try:
+    '''try:
         output_dict=load_dataset(args.dest_dataset,split="train").to_dict()
         skip=len(output_dict["image"])
-    except:
-        output_dict={
-            "image":[],
-            "augmented_image":[],
-            "text_score":[],
-            "image_score":[],
-            "dino_score":[],
-            "prompt":[]
-        }
-        skip=0
+    except:'''
+    output_dict={
+        "image":[],
+        "augmented_image":[],
+        "text_score":[],
+        "image_score":[],
+        "dino_score":[],
+        "prompt":[]
+    }
+    skip=0
 
     print("skipping ",skip)
     model_path = "CompVis/stable-diffusion-v1-4"
